@@ -27,7 +27,24 @@ const typeDefs = gql`
 		night: Boolean
 		elevationGain: Int!
 	}
+	type Trail {
+		id: ID!
+		name: String!
+		lift: [String!]!
+		difficulty: Difficulty!
+		status: LiftStatus!
+		groomed: Boolean
+		snowmaking: Boolean
+		trees: Boolean
+		night: Boolean
+	}
 
+	enum Difficulty {
+		beginner
+		intermediate
+		advanced
+		expert
+	}
 	enum LiftStatus {
 		OPEN
 		CLOSED
@@ -38,6 +55,9 @@ const typeDefs = gql`
 		LiftCount(status: LiftStatus): Int!
 		allLifts: [Lift!]!
 		findLiftById(id: ID!): Lift!
+		allTrails(status: LiftStatus): [Trail!]!
+		findTrailByID(id: ID!): Trail!
+		trailCount(status: LiftStatus!): Int!
 	}
 `
 //this resolver tells us how to do 
@@ -60,6 +80,17 @@ const resolvers = {
 		findLiftById: (parent, args) =>  {
 			return lifts.find(lift => args.id === lift.id)
 		},
+		allTrails: (parent,  { status }) => {
+			if(!status){
+				return trails.length
+			}else{
+				return trails.filter( trail => trail.status === status)
+			}
+		},
+		trailCount: (parent, { status }) => {
+			return trails.filter( trail => trail.status === status).length
+		}, 
+		findTrailByID: (parent, { id }) => trails.find(trail => trail.id === id)
 	}
 }
 const server = new ApolloServer({
