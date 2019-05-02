@@ -32,7 +32,7 @@ const typeDefs = gql`
 		name: String!
 		lift: [String!]!
 		difficulty: Difficulty!
-		status: LiftStatus!
+		status: TrailStatus!
 		groomed: Boolean
 		snowmaking: Boolean
 		trees: Boolean
@@ -50,14 +50,18 @@ const typeDefs = gql`
 		CLOSED
 		HOLD
 	}
+	enum TrailStatus {
+		OPEN 
+		CLOSED
+	}
 	type Query {
 		hello: String!
 		LiftCount(status: LiftStatus): Int!
 		allLifts: [Lift!]!
 		findLiftById(id: ID!): Lift!
-		allTrails(status: LiftStatus): [Trail!]!
+		allTrails(status: TrailStatus): [Trail!]!
 		findTrailByID(id: ID!): Trail!
-		trailCount(status: LiftStatus!): Int!
+		trailCount(status: TrailStatus!): Int!
 	}
 `
 //this resolver tells us how to do 
