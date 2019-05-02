@@ -13,11 +13,6 @@ const trails = require("./data/trails.json");
 //for when your type defs come from another file: 
 // const typeDefs = fs.readFileSync("typeDefs.graphql", "UTF-8");
 
-//TODO: Add Trail Queries 
-	// allTrails -- optional filter by status
-	//findTrailByID -- filter trail by ID
-	//trailCount: with a REQUIRED status argument/filter 
-
 const typeDefs = gql`
 	type Lift {
 		id: ID!
@@ -26,6 +21,7 @@ const typeDefs = gql`
 		capacity: Int!
 		night: Boolean
 		elevationGain: Int!
+		trailAccess: [Trail]
 	}
 	type Trail {
 		id: ID!
@@ -37,6 +33,7 @@ const typeDefs = gql`
 		snowmaking: Boolean
 		trees: Boolean
 		night: Boolean
+		accessedByLifts: [Lift!]!
 	}
 
 	enum Difficulty {
@@ -94,7 +91,11 @@ const resolvers = {
 		trailCount: (parent, { status }) => {
 			return trails.filter( trail => trail.status === status).length
 		}, 
-		findTrailByID: (parent, { id }) => trails.find(trail => trail.id === id)
+		findTrailByID: (parent, { id }) => trails.find(trail => trail.id === id), 
+
+	},
+	Lift: {
+			trailAccess: parent => parent.trails.map(id => trails.find(t => id === t.id)).filter(x => x)
 	}
 }
 const server = new ApolloServer({
