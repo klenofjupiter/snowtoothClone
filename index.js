@@ -1,7 +1,7 @@
 const { ApolloServer, gql } = require("apollo-server");
 const lifts = require("./data/lifts.json");
 const trails = require("./data/trails.json");
-
+const { GraphQLScalarType } = require("graphql")
 // we need two things now. a schema, and resolvers.
 //what's a resolver? 
 //the thing that fulfills the promise made by the schema
@@ -14,6 +14,7 @@ const trails = require("./data/trails.json");
 // const typeDefs = fs.readFileSync("typeDefs.graphql", "UTF-8");
 
 const typeDefs = gql`
+	scalar Date 
 	type Lift {
 		id: ID!
 		name: String!
@@ -60,6 +61,13 @@ const typeDefs = gql`
 		findTrailByID(id: ID!): Trail!
 		trailCount(status: TrailStatus!): Int!
 	}
+	type Mutation {
+	   setLiftStatus(id:ID! status: LiftStatus): SetLiftStatusPayload!
+	}
+	type SetLiftStatusPayload {
+		lift: Lift!
+		changed: Date!
+	}
 `
 //this resolver tells us how to do 
 //like, when you get the query hello, it returns the string hello world
@@ -94,9 +102,24 @@ const resolvers = {
 		findTrailByID: (parent, { id }) => trails.find(trail => trail.id === id), 
 
 	},
-	Lift: {
+	Mutation : {
+		setLiftStatus: (parent, { id, status }) => {
+			let updatedLift = lifts.find(lift => id === lift.id);
+			updatedLift.status = status
+			return { lift: updatedLift, changed: new Date() };
+		}
+		// setLiftStatus: (parent, { id, status} ) => {
+		// 	//something
+		// })
+	},
+	Lift: { //"trivial resolvers" --> custom code to create fields from the data
 			trailAccess: parent => parent.trails.map(id => trails.find(t => id === t.id)).filter(x => x)
-	}
+	}, 
+	Date: new GraphQLScalarType({
+		name: "Date", 
+		description: "A Valid datetime value", 
+		serialize: value => new Date(value).toISOString()
+	})
 }
 const server = new ApolloServer({
 	typeDefs, 
